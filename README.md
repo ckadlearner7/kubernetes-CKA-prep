@@ -1,12 +1,6 @@
-# Cloud Native Certified Kubernetes Administrator (CKA) Exam Preparation Notes
-This is a guide that will contain the technical notes about the steps that will help you in the Certified Kubernetes Adminstrator Exam (CKA)
+# Certified Kubernetes Administrator (CKA) Exam Preparation Notes
+This is a guide that will contain the technical notes & commands about the steps that will help you in the Certified Kubernetes Adminstrator Exam (CKA)
 
-# Test
-## Test
-### Test
-#### Test
-##### Test
-###### Test
 ## Core Concepts 19%
 1- Get a yaml spec of a running nginx deployment:
 
