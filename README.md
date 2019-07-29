@@ -1,5 +1,12 @@
 # Cloud Native Certified Kubernetes Administrator (CKA) Exam Preparation Notes
 This is a guide that will contain the technical notes about the steps that will help you in the Certified Kubernetes Adminstrator Exam (CKA)
+
+# Test
+## Test
+### Test
+#### Test
+##### Test
+###### Test
 ## Core Concepts 19%
 1- Get a yaml spec of a running nginx deployment:
 
@@ -37,9 +44,9 @@ NOTE: You can also filter objects using the field selectors ex:
 		
 	kubectl get pods --field-selector status.phase=Running,metadata.namespace!=default
 	
-# Installation, Configuration & Validation 12%
+## Installation, Configuration & Validation 12%
 
-Cluster Installation:
+### Cluster Installation:
 
 1- Get the Docker gpg key:
 
@@ -127,92 +134,93 @@ Watch as pods are created in the default namespace:
 
 ### Configuring Secure Cluster Communications:
 
-View the kube-config:
+1- View the kube-config:
 
 	cat .kube/config | more
 
-View the service account token:
+2- View the service account token:
 
 	kubectl get secrets
 
-Create a new namespace named my-ns:
+3- Create a new namespace named my-ns:
 
 	kubectl create ns my-ns
 
-Run the kube-proxy pod in the my-ns namespace:
+4- Run the kube-proxy pod in the my-ns namespace:
 
 	kubectl run test --image=chadmcrowell/kubectl-proxy -n my-ns
 
-List the pods in the my-ns namespace:
+5- List the pods in the my-ns namespace:
 
 	kubectl get pods -n my-ns
 
-Run a shell in the newly created pod:
+6- Run a shell in the newly created pod:
 
 	kubectl exec -it <name-of-pod> -n my-ns sh
 
-List the services in the namespace via API call:
+7- List the services in the namespace via API call:
 
 	curl localhost:8001/api/v1/namespaces/my-ns/services
 
-View the token file from within a pod:
+8- View the token file from within a pod:
 
 	cat /var/run/secrets/kubernetes.io/serviceaccount/token
 
-List the service account resources in your cluster:
+9- List the service account resources in your cluster:
 
 	kubectl get serviceaccounts
 
 ### Running End-to-End Tests on Your Cluster:
 		
-	1- Run a simple nginx deployment:
+1- Run a simple nginx deployment:
 
-		kubectl run nginx --image=nginx
+	kubectl run nginx --image=nginx
 
-	2- View the deployments in your cluster:
+2- View the deployments in your cluster:
 
-		kubectl get deployments
+	kubectl get deployments
 
-	3- View the pods in the cluster:
+3- View the pods in the cluster:
 
-		kubectl get pods
+	kubectl get pods
 
-	4- Use port forwarding to access a pod directly:
+4- Use port forwarding to access a pod directly:
 
-		kubectl port-forward $pod_name 8081:80
+	kubectl port-forward $pod_name 8081:80
 
-	5- Get a response from the nginx pod directly:
+5- Get a response from the nginx pod directly:
 
-		curl --head http://127.0.0.1:8081
+	curl --head http://127.0.0.1:8081
 
-	6- View the logs from a pod:
+6- View the logs from a pod:
 
-		kubectl logs $pod_name
+	kubectl logs $pod_name
 
-	7- Run a command directly from the container:
+7- Run a command directly from the container:
 
-		kubectl exec -it nginx -- nginx -v
+	kubectl exec -it nginx -- nginx -v
 
-	8- Create a service by exposing port 80 of the nginx deployment:
+8- Create a service by exposing port 80 of the nginx deployment:
 
-		kubectl expose deployment nginx --port 80 --type NodePort
+	kubectl expose deployment nginx --port 80 --type NodePort
 
-	9- List the services in your cluster:
+9- List the services in your cluster:
 
-		kubectl get services
+	kubectl get services
 
-	10- Get a response from the service:
+10- Get a response from the service:
 
-		curl -I localhost:$node_port
+	curl -I localhost:$node_port
 
-	11- List the nodes' status:
+11- List the nodes' status:
 
-		kubectl get nodes
+	kubectl get nodes
 
-	12- View detailed information about the nodes:
+12- View detailed information about the nodes:
 
-		kubectl describe nodes
+	kubectl describe nodes
 
-	13- View detailed information about the pods:
+13- View detailed information about the pods:
 
-		kubectl describe pods
+	kubectl describe pods
+	
