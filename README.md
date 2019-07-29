@@ -1,5 +1,5 @@
-# kubernetes-CKA-prep
-Certified Kubernetes Adminstrator Certificate Preparation Notes
+# Cloud Native Certified Kubernetes Administrator (CKA) Exam Preparation Notes
+This is a guide that will contain the technical notes about the steps that will help you in the Certified Kubernetes Adminstrator Exam (CKA)
 ## Core Concepts 19%
 1- Get a yaml spec of a running nginx deployment:
 
@@ -101,8 +101,7 @@ Cluster Installation:
 
 	kubectl get nodes
 
-Compare this result of the kubectl get nodes command:
-
+		Compare this result of the kubectl get nodes command:
 		NAME                            STATUS   ROLES    AGE   VERSION
 		chadcrowell1c.mylabserver.com   Ready    master   4m18s v1.13.5
 		chadcrowell2c.mylabserver.com   Ready    none     82s   v1.13.5
@@ -110,61 +109,61 @@ Compare this result of the kubectl get nodes command:
 
 ### Building a Highly Available Kubernetes Cluster:
 
-1- View the pods in the default namespace with a custom view:
+View the pods in the default namespace with a custom view:
 
 	kubectl get pods -o custom-columns=POD:metadata.name,NODE:spec.nodeName --sort-by spec.nodeName -n kube-system
 
-2- View the kube-scheduler YAML:
+View the kube-scheduler YAML:
 
 	kubectl get endpoints kube-scheduler -n kube-system -o yaml
 
-3- Create a stacked etcd topology using kubeadm:
+Create a stacked etcd topology using kubeadm:
 
 	kubeadm init --config=kubeadm-config.yaml
 
-4- Watch as pods are created in the default namespace:
+Watch as pods are created in the default namespace:
 
 	kubectl get pods -n kube-system -w
 
-Configuring Secure Cluster Communications:
+### Configuring Secure Cluster Communications:
 
-	1- View the kube-config:
+View the kube-config:
 
-		cat .kube/config | more
+	cat .kube/config | more
 
-	2- View the service account token:
+View the service account token:
 
-		kubectl get secrets
+	kubectl get secrets
 
-	3- Create a new namespace named my-ns:
+Create a new namespace named my-ns:
 
-		kubectl create ns my-ns
+	kubectl create ns my-ns
 
-	4- Run the kube-proxy pod in the my-ns namespace:
+Run the kube-proxy pod in the my-ns namespace:
 
-		kubectl run test --image=chadmcrowell/kubectl-proxy -n my-ns
+	kubectl run test --image=chadmcrowell/kubectl-proxy -n my-ns
 
-	5- List the pods in the my-ns namespace:
+List the pods in the my-ns namespace:
 
-		kubectl get pods -n my-ns
+	kubectl get pods -n my-ns
 
-	6- Run a shell in the newly created pod:
+Run a shell in the newly created pod:
 
-		kubectl exec -it <name-of-pod> -n my-ns sh
+	kubectl exec -it <name-of-pod> -n my-ns sh
 
-	7- List the services in the namespace via API call:
+List the services in the namespace via API call:
 
-		curl localhost:8001/api/v1/namespaces/my-ns/services
+	curl localhost:8001/api/v1/namespaces/my-ns/services
 
-	8- View the token file from within a pod:
+View the token file from within a pod:
 
-		cat /var/run/secrets/kubernetes.io/serviceaccount/token
+	cat /var/run/secrets/kubernetes.io/serviceaccount/token
 
-	9- List the service account resources in your cluster:
+List the service account resources in your cluster:
 
-		kubectl get serviceaccounts
+	kubectl get serviceaccounts
 
-Running End-to-End Tests on Your Cluster:
+### Running End-to-End Tests on Your Cluster:
 		
 	1- Run a simple nginx deployment:
 
