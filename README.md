@@ -1,10 +1,8 @@
 # kubernetes-CKA-prep
 Certified Kubernetes Adminstrator Certificate Preparation Notes
-#### Core Concepts #### 19%
-
-	1- Get a yaml spec of a running nginx deployment:
-
-		kubectl get deployment nginx-deployment -o yaml
+## Core Concepts 19%
+1- Get a yaml spec of a running nginx deployment:
+	kubectl get deployment nginx-deployment -o yaml
 		
 	2- Show labels of a specific pod
 
