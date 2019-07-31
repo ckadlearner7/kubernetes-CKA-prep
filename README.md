@@ -218,3 +218,83 @@ Watch as pods are created in the default namespace:
 
 	kubectl describe pods
 	
+## Managing the Kubernetes Cluster
+
+### Upgrading the Kubernetes Cluster
+The upgrade plan from v13 to v14 should go as below:
+1. Upgrade the primary control plane node.
+2. Upgrade additional control plane nodes.
+3. Upgrade worker nodes.
+
+#### Upgrading the Kube Master
+Get the version of the API server:
+	
+	kubectl version --short
+
+View the version of kubelet:
+
+	kubectl describe nodes 
+
+View the version of controller-manager pod:
+
+	kubectl get po [controller_pod_name] -o yaml -n kube-system
+
+Release the hold on versions of kubeadm and kubelet and kubectl:
+
+	sudo apt-mark unhold kubeadm kubelet kubectl
+
+Install version 1.14.1 of kubeadm:
+
+	sudo apt install -y kubeadm=1.14.1-00
+
+Hold the version of kubeadm at 1.14.1:
+
+	sudo apt-mark hold kubeadm
+
+Verify the version of kubeadm:
+
+	kubeadm version
+
+Plan the upgrade of all the controller components:
+
+	sudo kubeadm upgrade plan
+
+Upgrade the controller components:
+
+	sudo kubeadm upgrade apply v1.14.1
+
+Upgrade kubectl:
+
+	sudo apt install -y kubectl=1.14.1-00
+
+Upgrade the version of kubelet:
+
+	sudo apt install -y kubelet=1.14.1-00
+
+Hold the versions of kubelet & kubectl at 1.14.1:
+
+	sudo apt-mark hold kubelet kubectl
+	
+#### Upgrading the Kube Worker Nodes
+Apply this on each and every node
+
+Release the hold on versions of kubeadm and kubelet and kubectl:
+
+	sudo apt-mark unhold kubeadm kubelet kubectl
+	
+Install version 1.14.1 of kubeadm, kubelet & kubectl: (Note: You might want to install the kubectl last)
+
+	sudo apt install -y kubeadm=1.14.1-00 kubelet=1.14.1-00 kubectl=1.14.1-00
+	
+Hold the versions of kubeadm, kubelet & kubectl at 1.14.1:
+
+	sudo apt-mark hold kubeadm kubelet kubectl
+	
+On the Master Node, verify that all versions of the nodes have been upgraded:
+
+	kubectl get nodes
+	
+		NAME                            STATUS   ROLES    AGE   VERSION
+		chadcrowell1c.mylabserver.com   Ready    master   4m18s v1.14.1
+		chadcrowell2c.mylabserver.com   Ready    none     82s   v1.14.1
+		chadcrowell3c.mylabserver.com   Ready    none     69s   v1.14.1
