@@ -350,5 +350,46 @@ NOTE: This will only be needed when creating a new node machine, that hasn't joi
 
 	sudo kubeadm token create [token_name] --ttl 2h --print-join-command
 
+## Backing Up and Restoring a Kubernetes Cluster
+
+Get the etcd binaries:
+
+	wget https://github.com/etcd-io/etcd/releases/download/v3.3.12/etcd-v3.3.12-linux-amd64.tar.gz
+
+Unzip the compressed binaries:
+
+	tar -zxvf etcd-v3.3.12-linux-amd64.tar.gz
+
+Move the files into /usr/local/bin:
+
+	sudo mv etcd-v3.3.12-linux-amd64/etcd* /usr/local/bin
+
+Take a snapshot of the etcd datastore using etcdctl:
+
+	sudo ETCDCTL_API=3 etcdctl snapshot save snapshot.db --cacert /etc/kubernetes/pki/etcd/server.crt --cert /etc/kubernetes/pki/etcd/ca.crt --key /etc/kubernetes/pki/etcd/ca.key
+
+View the help page for etcdctl:
+
+	ETCDCTL_API=3 etcdctl --help
+
+Browse to the folder that contains the certificate files:
+
+	cd /etc/kubernetes/pki/etcd/
+	
+Note: You'll also want to backup the certificate files and keys:
+
+	sudo tar -zcvf etcs-certificates_$(date -I).tar.gz /etc/kubernetes/pki/etcd/
+
+View that the snapshot was successful:
+
+	ETCDCTL_API=3 etcdctl --write-out=table snapshot status snapshot.db
+
+Zip up the contents of the etcd directory:
+
+	sudo tar -zcvf etcd.tar.gz etcd
+
+Copy the etcd directory to another server:
+
+	scp etcd.tar.gz cloud_user@18.219.235.42:~/
 
 
