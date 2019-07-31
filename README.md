@@ -298,3 +298,57 @@ On the Master Node, verify that all versions of the nodes have been upgraded:
 		chadcrowell1c.mylabserver.com   Ready    master   4m18s v1.14.1
 		chadcrowell2c.mylabserver.com   Ready    none     82s   v1.14.1
 		chadcrowell3c.mylabserver.com   Ready    none     69s   v1.14.1
+
+## Operating System Upgrades within a Kubernetes Cluster
+
+See which pods are running on which nodes:
+
+	kubectl get pods -o wide
+
+Evict the pods that are running the node that you want to upgrade: (This will move all the pods that are running on the node you want to upgrade, and place them on other nodes with available resources)
+
+	kubectl drain [node_name] --ignore-daemonsets
+
+Watch as the node changes status:
+
+	kubectl get nodes -w
+	
+You will notice that the STATUS of the evected node will change: (In this case, this particular node is disabled from getting any new pods running on it)
+
+	kubectl get nodes
+	NAME                          STATUS                     ROLES    AGE    VERSION
+	mhmdksh931c.mylabserver.com   Ready                      master   3h2m   v1.14.1
+	mhmdksh932c.mylabserver.com   Ready                      <none>   34m    v1.14.1
+	mhmdksh933c.mylabserver.com   Ready,SchedulingDisabled   <none>   166m   v1.14.1
+
+Schedule pods to the node after maintenance is complete:
+
+	kubectl uncordon [node_name]
+
+You will notice that the STATUS changed again, and it is now ready to receive new pods
+
+	NAME                          STATUS   ROLES    AGE    VERSION
+	mhmdksh931c.mylabserver.com   Ready    master   3h5m   v1.14.1
+	mhmdksh932c.mylabserver.com   Ready    <none>   36m    v1.14.1
+	mhmdksh933c.mylabserver.com   Ready    <none>   168m   v1.14.1
+
+Remove a node from the cluster:
+
+	kubectl delete node [node_name]
+
+Generate a new token:
+
+	sudo kubeadm token generate
+
+List the tokens:
+
+	sudo kubeadm token list
+
+Print the kubeadm join command to join a node to the cluster:
+
+NOTE: This will only be needed when creating a new node machine, that hasn't joined the cluster yet. Unlike a machine that is already been joined and will connect to the cluster upon the next reboot.
+
+	sudo kubeadm token create [token_name] --ttl 2h --print-join-command
+
+
+
