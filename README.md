@@ -392,4 +392,53 @@ Copy the etcd directory to another server:
 
 	scp etcd.tar.gz cloud_user@18.219.235.42:~/
 
+## Networking (11%)
 
+### Cluster Communications
+#### Pods and Nodes Networking
+See which node our pod is on:
+
+	kubectl get pods -o wide
+
+Log in to the node:
+
+	ssh [node_name]
+
+View the node's virtual network interfaces:
+
+	ifconfig
+
+View the containers in the pod:
+
+	docker ps
+
+Get the process ID for the container:
+
+	docker inspect --format '{{ .State.Pid }}' [container_id]	
+ex:
+
+	docker inspect --format '{{ .State.Pid }}' 9e4aa2e0aa2b
+		
+		4349
+
+Use nsenter to run a command in the process's network namespace:
+
+	nsenter -t [container_pid] -n ip addr
+ex:
+	
+	nsenter -t 4349 -n ip addr
+	
+		1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+		link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    		inet 127.0.0.1/8 scope host lo
+		   valid_lft forever preferred_lft forever
+		3: eth0@if7: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 8951 qdisc noqueue state UP group default
+		link/ether 86:0a:cc:cc:33:f9 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+		inet 10.244.2.9/24 scope global eth0
+		   valid_lft forever preferred_lft forever
+		   
+You will notice that the virtual ethernet port of this particular pod is the port number 7 on the hosting node.
+
+#### Container Network Interface (CNI)
+
+		
