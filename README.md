@@ -479,4 +479,105 @@ Look at the iptables rules for your services:
 
 	sudo iptables-save | grep KUBE | grep nginx
 
-		
+#### Ingress Rules and Load Balancers		
+When handling traffic from outside sources, there are two ways to direct that traffic to your pods: deploying a load balancer, and creating an ingress controller and an Ingress resource. In this lesson, we will talk about the benefits of each and how Kubernetes distributes traffic to the pods on a node to reduce latency and direct traffic to the appropriate services within your cluster.
+
+View the list of services:
+
+	kubectl get services
+
+The load balancer YAML spec:
+
+	apiVersion: v1
+	kind: Service
+	metadata:
+	  name: nginx-loadbalancer
+	spec:
+	  type: LoadBalancer
+	  ports:
+	  - port: 80
+	    targetPort: 80
+	  selector:
+	    app: nginx
+
+Create a new deployment:
+
+	kubectl run kubeserve2 --image=chadmcrowell/kubeserve2
+
+View the list of deployments:
+
+	kubectl get deployments
+
+Scale the deployments to 2 replicas:
+
+	kubectl scale deployment/kubeserve2 --replicas=2
+
+View which pods are on which nodes:
+
+	kubectl get pods -o wide
+
+Create a load balancer from a deployment:
+
+	kubectl expose deployment kubeserve2 --port 80 --target-port 8080 --type LoadBalancer
+
+View the services in your cluster:
+
+	kubectl get services
+
+Watch as an external port is created for a service:
+
+	kubectl get services -w
+
+Look at the YAML for a service:
+
+	kubectl get services kubeserve2 -o yaml
+
+Curl the external IP of the load balancer:
+
+	curl http://[external-ip]
+
+View the annotation associated with a service:
+
+	kubectl describe services kubeserve
+
+Set the annotation to route load balancer traffic local to the node:
+
+	kubectl annotate service kubeserve2 externalTrafficPolicy=Local
+
+The YAML for an Ingress resource:
+
+	apiVersion: extensions/v1beta1
+	kind: Ingress
+	metadata:
+	  name: service-ingress
+	spec:
+	  rules:
+	  - host: kubeserve.example.com
+	    http:
+	      paths:
+	      - backend:
+		  serviceName: kubeserve2
+		  servicePort: 80
+	  - host: app.example.com
+	    http:
+	      paths:
+	      - backend:
+		  serviceName: nginx
+		  servicePort: 80
+	  - http:
+	      paths:
+	      - backend:
+		  serviceName: httpd
+		  servicePort: 80
+
+Edit the ingress rules:
+
+	kubectl edit ingress
+
+View the existing ingress rules:
+
+	kubectl describe ingress
+
+Curl the hostname of your Ingress resource:
+
+	curl http://kubeserve2.example.com
