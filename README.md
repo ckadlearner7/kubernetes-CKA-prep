@@ -430,7 +430,7 @@ ex:
 	
 		1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
 		link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-    		inet 127.0.0.1/8 scope host lo
+		inet 127.0.0.1/8 scope host lo
 		   valid_lft forever preferred_lft forever
 		3: eth0@if7: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 8951 qdisc noqueue state UP group default
 		link/ether 86:0a:cc:cc:33:f9 brd ff:ff:ff:ff:ff:ff link-netnsid 0
