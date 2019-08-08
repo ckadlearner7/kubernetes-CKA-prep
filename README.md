@@ -544,6 +544,8 @@ Set the annotation to route load balancer traffic local to the node:
 
 	kubectl annotate service kubeserve2 externalTrafficPolicy=Local
 
+Igress: Unlike loadbalancers, which will act as a single point that will distibute the traffic to different nodes, the ingress rules are used as a single frontend point to access different services. It also provides different features from the loadbalancers, as it works on the application level.
+
 The YAML for an Ingress resource:
 
 	apiVersion: extensions/v1beta1
