@@ -672,3 +672,64 @@ YAML spec for a custom DNS pod:
 	      - name: ndots
 		value: "2"
 	      - name: edns0
+
+## Pod Scheduling within the Kubernetes Cluster 
+### Configuring the Kubernetes Scheduler
+The default scheduler in Kubernetes attempts to find the best node for your pod by going through a series of steps. In this lesson, we will cover the steps in detail in order to better understand the scheduler’s function when placing pods on nodes to maximize uptime for the applications running in your cluster. We will also go through how to create a deployment with node affinity.
+
+Label your node as being located in availability zone 1:
+
+	kubectl label node chadcrowell1c.mylabserver.com availability-zone=zone1
+
+Label your node as dedicated infrastructure:
+
+	kubectl label node chadcrowell1c.mylabserver.com share-type=dedicated
+
+Here is the YAML for the deployment to include the node affinity rules:
+
+	apiVersion: extensions/v1beta1
+	kind: Deployment
+	metadata:
+	  name: pref
+	spec:
+	  replicas: 5
+	  template:
+	    metadata:
+	      labels:
+		app: pref
+	    spec:
+	      affinity:
+		nodeAffinity:
+		  preferredDuringSchedulingIgnoredDuringExecution:
+		  - weight: 80
+		    preference:
+		      matchExpressions:
+		      - key: availability-zone
+			operator: In
+			values:
+			- zone1
+		  - weight: 20
+		    preference:
+		      matchExpressions:
+		      - key: share-type
+			operator: In
+			values:
+			- dedicated
+	      containers:
+	      - args:
+		- sleep
+		- "99999"
+		image: busybox
+		name: main
+
+Create the deployment:
+
+	kubectl create -f pref-deployment.yaml
+
+View the deployment:
+
+	kubectl get deployments
+
+View which pods landed on which nodes:
+
+	kubectl get pods -o wide
