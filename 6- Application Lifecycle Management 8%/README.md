@@ -5,89 +5,89 @@ We already know Kubernetes will run pods and deployments, but what happens when 
 
 The YAML for a deployment:
 
-  apiVersion: apps/v1
-  kind: Deployment
-  metadata:
-    name: kubeserve
-  spec:
-    replicas: 3
-    selector:
-      matchLabels:
-        app: kubeserve
-    template:
-      metadata:
-        name: kubeserve
-        labels:
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: kubeserve
+    spec:
+      replicas: 3
+      selector:
+        matchLabels:
           app: kubeserve
-      spec:
-        containers:
-        - image: linuxacademycontent/kubeserve:v1
-          name: app
+      template:
+        metadata:
+          name: kubeserve
+          labels:
+            app: kubeserve
+        spec:
+          containers:
+          - image: linuxacademycontent/kubeserve:v1
+            name: app
 
-Create a deployment with a record (for rollbacks):
+1- Create a deployment with a record (for rollbacks):
 
-  kubectl create -f kubeserve-deployment.yaml --record
+    kubectl create -f kubeserve-deployment.yaml --record
 
-Check the status of the rollout:
+2- Check the status of the rollout:
 
-  kubectl rollout status deployments kubeserve
+    kubectl rollout status deployments kubeserve
 
-View the ReplicaSets in your cluster:
+3- View the ReplicaSets in your cluster:
 
-  kubectl get replicasets
+    kubectl get replicasets
 
-Scale up your deployment by adding more replicas:
+4- Scale up your deployment by adding more replicas:
 
-  kubectl scale deployment kubeserve --replicas=5
+     kubectl scale deployment kubeserve --replicas=5
 
-Expose the deployment and provide it a service:
+5- Expose the deployment and provide it a service:
 
-  kubectl expose deployment kubeserve --port 80 --target-port 80 --type NodePort
+    kubectl expose deployment kubeserve --port 80 --target-port 80 --type NodePort
 
-Set the minReadySeconds attribute to your deployment:
+6- Set the minReadySeconds attribute to your deployment:
 
-  kubectl patch deployment kubeserve -p '{"spec": {"minReadySeconds": 10}}'
+    kubectl patch deployment kubeserve -p '{"spec": {"minReadySeconds": 10}}'
 
-Use kubectl apply to update a deployment:
+7- Use kubectl apply to update a deployment:
 
-  kubectl apply -f kubeserve-deployment.yaml
+    kubectl apply -f kubeserve-deployment.yaml
 
-Use kubectl replace to replace an existing deployment:
+8- Use kubectl replace to replace an existing deployment:
 
-  kubectl replace -f kubeserve-deployment.yaml
+    kubectl replace -f kubeserve-deployment.yaml
 
-Run this curl look while the update happens:
+9- Run this curl look while the update happens:
 
-  while true; do curl http://10.105.31.119; done
+    while true; do curl http://10.105.31.119; done
 
-Perform the rolling update:
+10- Perform the rolling update:
 
-  kubectl set image deployments/kubeserve app=linuxacademycontent/kubeserve:v2 --v 6
+    kubectl set image deployments/kubeserve app=linuxacademycontent/kubeserve:v2 --v 6
 
-Describe a certain ReplicaSet:
+11- Describe a certain ReplicaSet:
  
-  kubectl describe replicasets kubeserve-[hash]
+    kubectl describe replicasets kubeserve-[hash]
 
-Apply the rolling update to version 3 (buggy):
+12- Apply the rolling update to version 3 (buggy):
 
-  kubectl set image deployment kubeserve app=linuxacademycontent/kubeserve:v3
+    kubectl set image deployment kubeserve app=linuxacademycontent/kubeserve:v3
 
-Undo the rollout and roll back to the previous version:
+13- Undo the rollout and roll back to the previous version:
 
-  kubectl rollout undo deployments kubeserve
+    kubectl rollout undo deployments kubeserve
 
-Look at the rollout history:
+14- Look at the rollout history:
 
-  kubectl rollout history deployment kubeserve
+    kubectl rollout history deployment kubeserve
 
-Roll back to a certain revision:
+15- Roll back to a certain revision:
 
-  kubectl rollout undo deployment kubeserve --to-revision=2
+    kubectl rollout undo deployment kubeserve --to-revision=2
 
-Pause the rollout in the middle of a rolling update (canary release):
+16- Pause the rollout in the middle of a rolling update (canary release):
 
-  kubectl rollout pause deployment kubeserve
+    kubectl rollout pause deployment kubeserve
 
-Resume the rollout after the rolling update looks good:
+17- Resume the rollout after the rolling update looks good:
 
-  kubectl rollout resume deployment kubeserve
+    kubectl rollout resume deployment kubeserve
