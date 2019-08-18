@@ -129,3 +129,6 @@ In the CLI, the access modes are abbreviated to:
 * RWX - ReadWriteMany
 
 Important! A volume can only be mounted using one access mode at a time, even if it supports many. For example, a GCEPersistentDisk can be mounted as ReadWriteOnce by a single node or ReadOnlyMany by many nodes, but not at the same time.
+
+### Persistent Volume Claims
+
