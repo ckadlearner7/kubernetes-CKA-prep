@@ -112,3 +112,20 @@ Create the Persistent Volume resource:
 View our Persistent Volumes:
 
     kubectl get persistentvolumes
+    
+### Volume Access Modes
+A PersistentVolume can be mounted on a host in any way supported by the resource provider. As shown in the table below, providers will have different capabilities and each PV’s access modes are set to the specific modes supported by that particular volume. For example, NFS can support multiple read/write clients, but a specific NFS PV might be exported on the server as read-only. Each PV gets its own set of access modes describing that specific PV’s capabilities.
+
+The access modes are:
+
+* ReadWriteOnce – the volume can be mounted as read-write by a single node
+* ReadOnlyMany – the volume can be mounted read-only by many nodes
+* ReadWriteMany – the volume can be mounted as read-write by many nodes
+
+In the CLI, the access modes are abbreviated to:
+
+* RWO - ReadWriteOnce
+* ROX - ReadOnlyMany
+* RWX - ReadWriteMany
+
+Important! A volume can only be mounted using one access mode at a time, even if it supports many. For example, a GCEPersistentDisk can be mounted as ReadWriteOnce by a single node or ReadOnlyMany by many nodes, but not at the same time.
