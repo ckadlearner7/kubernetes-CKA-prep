@@ -159,3 +159,111 @@ Access PersistentVolumes (cluster-level) from the pod:
 
     curl localhost:8001/api/v1/persistentvolumes
 
+## Configuring Network Policies
+Network policies allow you to specify which pods can talk to other pods. This helps when securing communication between pods, allowing you to identify ingress and egress rules. You can apply a network policy to a pod by using pod or namespace selectors. You can even choose a CIDR block range to apply the network policy. In this lesson, we’ll go through each of these options for network policies.
+
+Download the canal plugin:
+
+    wget -O canal.yaml https://docs.projectcalico.org/v3.5/getting-started/kubernetes/installation/hosted/canal/canal.yaml
+
+Apply the canal plugin:
+
+    kubectl apply -f canal.yaml
+
+The YAML for a deny-all NetworkPolicy:
+
+    apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata:
+      name: deny-all
+    spec:
+      podSelector: {}
+      policyTypes:
+      - Ingress
+
+Run a deployment to test the NetworkPolicy:
+
+    kubectl run nginx --image=nginx --replicas=2
+
+Create a service for the deployment:
+
+    kubectl expose deployment nginx --port=80
+
+Attempt to access the service by using a busybox interactive pod:
+
+    kubectl run busybox --rm -it --image=busybox /bin/sh
+    #wget --spider --timeout=1 nginx
+
+The YAML for a pod selector NetworkPolicy:
+
+    apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata:
+      name: db-netpolicy
+    spec:
+      podSelector:
+        matchLabels:
+          app: db
+      ingress:
+      - from:
+        - podSelector:
+            matchLabels:
+              app: web
+        ports:
+        - port: 5432
+
+Label a pod to get the NetworkPolicy:
+
+    kubectl label pods [pod_name] app=db
+
+The YAML for a namespace NetworkPolicy:
+
+    apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata:
+      name: ns-netpolicy
+    spec:
+      podSelector:
+        matchLabels:
+          app: db
+      ingress:
+      - from:
+        - namespaceSelector:
+            matchLabels:
+              tenant: web
+        ports:
+        - port: 5432
+
+The YAML for an IP block NetworkPolicy:
+
+    apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata:
+      name: ipblock-netpolicy
+    spec:
+      podSelector:
+        matchLabels:
+          app: db
+      ingress:
+      - from:
+        - ipBlock:
+            cidr: 192.168.1.0/24
+
+The YAML for an egress NetworkPolicy:
+
+    apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata:
+      name: egress-netpol
+    spec:
+      podSelector:
+        matchLabels:
+          app: web
+      egress:
+      - to:
+        - podSelector:
+            matchLabels:
+              app: db
+        ports:
+        - port: 5432
+
