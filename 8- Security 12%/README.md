@@ -347,3 +347,284 @@ View the certificate within your CSR:
 Extract and decode your certificate to use in a file:
 
     kubectl get csr pod-csr.web -o jsonpath='{.status.certificate}' base64 --decode > server.crt
+
+## Secure Images
+Working with secure images is imperative in Kubernetes, as it ensures your applications are running efficiently and protecting you from vulnerabilities. In this lesson, we’ll go through how to set Kubernetes to use a private registry.
+
+View where your Docker credentials are stored:
+
+    sudo vim /home/cloud_user/.docker/config.json
+
+Log in to the Docker Hub:
+
+    sudo docker login
+
+View the images currently on your server:
+
+    sudo docker images
+
+Pull a new image to use with a Kubernetes pod:
+
+    sudo docker pull busybox:1.28.4
+
+Log in to a private registry using the docker login command:
+
+    sudo docker login -u podofminerva -p 'otj701c9OucKZOCx5qrRblofcNRf3W+e' podofminerva.azurecr.io
+
+View your stored credentials:
+
+    sudo vim /home/cloud_user/.docker/config.json
+
+Tag an image in order to push it to a private registry:
+
+    sudo docker tag busybox:1.28.4 podofminerva.azurecr.io/busybox:latest
+
+Push the image to your private registry:
+
+    docker push podofminerva.azurecr.io/busybox:latest
+
+Create a new docker-registry secret:
+
+    kubectl create secret docker-registry acr --docker-server=https://podofminerva.azurecr.io --docker-username=podofminerva --docker-password='otj701c9OucKZOCx5qrRblofcNRf3W+e' --docker-email=user@example.com
+
+Modify the default service account to use your new docker-registry secret:
+
+    kubectl patch sa default -p '{"imagePullSecrets": [{"name": "acr"}]}'
+
+The YAML for a pod using an image from a private repository:
+
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: acr-pod
+      labels:
+        app: busybox
+    spec:
+      containers:
+        - name: busybox
+          image: podofminerva.azurecr.io/busybox:latest
+          command: ['sh', '-c', 'echo Hello Kubernetes! && sleep 3600']
+          imagePullPolicy: Always
+
+Create the pod from the private image:
+
+    kubectl apply -f acr-pod.yaml
+
+View the running pod:
+
+    kubectl get pods
+
+## Defining Security Contexts
+Defining security contexts allows you to lock down your containers, so that only certain processes can do certain things. This ensures the stability of your containers and allows you to give control or take it away. In this lesson, we’ll go through how to set the security context at the container level and the pod level.
+
+Run an alpine container with default security:
+
+    kubectl run pod-with-defaults --image alpine --restart Never -- /bin/sleep 999999
+
+Check the ID on the container:
+
+    kubectl exec pod-with-defaults id
+
+The YAML for a container that runs as a user:
+
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: alpine-user-context
+    spec:
+      containers:
+      - name: main
+        image: alpine
+        command: ["/bin/sleep", "999999"]
+        securityContext:
+          runAsUser: 405
+
+Create a pod that runs the container as user:
+
+    kubectl apply -f alpine-user-context.yaml
+
+View the IDs of the new pod created with container user permission:
+
+    kubectl exec alpine-user-context id
+
+The YAML for a pod that runs the container as non-root:
+
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: alpine-nonroot
+    spec:
+      containers:
+      - name: main
+        image: alpine
+        command: ["/bin/sleep", "999999"]
+        securityContext:
+          runAsNonRoot: true
+
+Create a pod that runs the container as non-root:
+
+    kubectl apply -f alpine-nonroot.yaml
+
+View more information about the pod error:
+
+    kubectl describe pod alpine-nonroot
+
+The YAML for a privileged container pod:
+
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: privileged-pod
+    spec:
+      containers:
+      - name: main
+        image: alpine
+        command: ["/bin/sleep", "999999"]
+        securityContext:
+          privileged: true
+
+Create the privileged container pod:
+
+    kubectl apply -f privileged-pod.yaml
+
+View the devices on the default container:
+
+    kubectl exec -it pod-with-defaults ls /dev
+
+View the devices on the privileged pod container:
+
+    kubectl exec -it privileged-pod ls /dev
+
+Try to change the time on a default container pod:
+
+    kubectl exec -it pod-with-defaults -- date +%T -s "12:00:00"
+
+The YAML for a container that will allow you to change the time:
+
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: kernelchange-pod
+    spec:
+      containers:
+      - name: main
+        image: alpine
+        command: ["/bin/sleep", "999999"]
+        securityContext:
+          capabilities:
+            add:
+            - SYS_TIME
+
+Create the pod that will allow you to change the container’s time:
+
+    kubectl run -f kernelchange-pod.yaml
+
+Change the time on a container:
+
+    kubectl exec -it kernelchange-pod -- date +%T -s "12:00:00"
+
+View the date on the container:
+
+    kubectl exec -it kernelchange-pod -- date
+
+The YAML for a container that removes capabilities:
+
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: remove-capabilities
+    spec:
+      containers:
+      - name: main
+        image: alpine
+        command: ["/bin/sleep", "999999"]
+        securityContext:
+          capabilities:
+            drop:
+            - CHOWN
+
+Create a pod that’s container has capabilities removed:
+
+    kubectl apply -f remove-capabilities.yaml
+
+Try to change the ownership of a container with removed capability:
+
+    kubectl exec remove-capabilities chown guest /tmp
+
+The YAML for a pod container that can’t write to the local filesystem:
+
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: readonly-pod
+    spec:
+      containers:
+      - name: main
+        image: alpine
+        command: ["/bin/sleep", "999999"]
+        securityContext:
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - name: my-volume
+          mountPath: /volume
+          readOnly: false
+      volumes:
+      - name: my-volume
+        emptyDir:
+
+Create a pod that will not allow you to write to the local container filesystem:
+
+    kubectl apply -f readonly-pod.yaml
+
+Try to write to the container filesystem:
+
+    kubectl exec -it readonly-pod touch /new-file
+
+Create a file on the volume mounted to the container:
+
+    kubectl exec -it readonly-pod touch /volume/newfile
+
+View the file on the volume that’s mounted:
+
+    kubectl exec -it readonly-pod -- ls -la /volume/newfile
+
+The YAML for a pod that has different group permissions for different pods:
+
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: group-context
+    spec:
+      securityContext:
+        fsGroup: 555
+        supplementalGroups: [666, 777]
+      containers:
+      - name: first
+        image: alpine
+        command: ["/bin/sleep", "999999"]
+        securityContext:
+          runAsUser: 1111
+        volumeMounts:
+        - name: shared-volume
+          mountPath: /volume
+          readOnly: false
+      - name: second
+        image: alpine
+        command: ["/bin/sleep", "999999"]
+        securityContext:
+          runAsUser: 2222
+        volumeMounts:
+        - name: shared-volume
+          mountPath: /volume
+          readOnly: false
+      volumes:
+      - name: shared-volume
+        emptyDir:
+
+Create a pod with two containers and different group permissions:
+
+    kubectl apply -f group-context.yaml
+
+Open a shell to the first container on that pod:
+
+    kubectl exec -it group-context -c first sh
